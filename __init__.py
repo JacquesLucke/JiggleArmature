@@ -516,7 +516,7 @@ def step(scene):
                    # b.matrix = iow*wb.M
 
     scene.jiggle.last_frame+= 1
-    print("updated")
+    # print("updated")
 
 @persistent
 def update_post(scene, tm = False):
@@ -526,12 +526,12 @@ def update_post(scene, tm = False):
 def update(scene, tm = False):
     global dt
     dt = 1.0/(scene.render.fps*scene.jiggle.sub_steps)
-    print(scene.jiggle.test_mode)
+    # print(scene.jiggle.test_mode)
     if(not (scene.jiggle.test_mode or tm)):
         return
    # if(scene.frame_current == scene.jiggle.last_frame):
    #     return
-    print("beg2 " + str(scene.frame_current)+ " " +  str(scene.jiggle.last_frame))
+    # print("beg2 " + str(scene.frame_current)+ " " +  str(scene.jiggle.last_frame))
     if(scene.frame_current <  scene.jiggle.last_frame or scene.frame_current == scene.frame_start): #frame break
         scene.jiggle.last_frame = scene.frame_current
         for o in scene.objects:
