@@ -40,6 +40,7 @@ bl_info = {
 import bpy
 import math
 import bmesh
+from collections import defaultdict
 from bpy.app.handlers import persistent
 from bpy.types import Menu, Panel, UIList
 from mathutils import Matrix, Vector, Quaternion
@@ -183,14 +184,14 @@ class JB:
         if self.w <= 0:
             return
 
-            I = I * self.w
-            C = self.sample(t)
-            r = p - C
-            tg = p + I
-            r2 = tg - C
-            ax = r.cross(r2)
+        I = I * self.w
+        C = self.sample(t)
+        r = p - C
+        tg = p + I
+        r2 = tg - C
+        ax = r.cross(r2)
 
-            if(ax.length_squared > 0.000001):
+        if(ax.length_squared > 0.000001):
             angle = r.angle(r2)
             mr = Matrix.Rotation(angle, 3, ax)
             self.R = (mr @ self.R).normalized()
