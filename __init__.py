@@ -338,27 +338,19 @@ def step(scene):
     for o in scene.objects:
         if(o.type == 'ARMATURE'):
 
-            arm = o.data
             ow = o.matrix_world.copy()
             scale = maxis(ow,0).length
-            #normR(ow)
-            iow = ow.inverted()
-            iow3 = ow.to_3x3().inverted()
 
-            i=0
-            for j in range( sub_steps):
+            for _ in range( sub_steps):
                 bl = []
-                wt = []
 
                 for b in o.pose.bones:
                     if(b.parent==None):
                         propB(ow,b,bl,None)
-                hooks= []
 
                 bl2 = []
                 for wb in bl:
                     b = wb.b
-                    crest = b
                     # o------ -> ---o---
                     wb.restW = b.bone.matrix_local.copy() * scale
                     wb.Q = wb.Q.normalized()
@@ -459,7 +451,6 @@ def step(scene):
                     if(b.parent!=None):
                         pM = wb.parent.M
                     b.matrix_basis = (pM@wb.rest_base).inverted()@wb.M
-                   # b.matrix = iow*wb.M
 
     scene.jiggle.last_frame+= 1
     # print("updated")
@@ -480,10 +471,7 @@ def update(scene, tm = False):
         scene.jiggle.last_frame = scene.frame_current
         for o in scene.objects:
             if( o.type == 'ARMATURE'):
-                arm = o.data
                 ow = o.matrix_world
-                iow = ow.inverted()
-                i=0
                 for b in o.pose.bones:
                     if(b.bone.jiggle.enabled):
                         M = ow@b.matrix #ow*Sbp.wmat* Sb.rmat #im
