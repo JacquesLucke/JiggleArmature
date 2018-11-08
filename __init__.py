@@ -245,7 +245,7 @@ def quatSpring(Jb,r=None,k=None):
     Q1 = Jb.Q
     w0 = Jb.parent.w
     w1 = Jb.w
-    if(r==None):
+    if(r is None):
         r = Jb.rest.to_quaternion()
         k = Jb.k
     Q0x = Q0.x
@@ -278,10 +278,21 @@ def quatSpring(Jb,r=None,k=None):
 
     c = pow(tmp4, 2) + pow(tmp5, 2) + pow(tmp6, 2)
 
-    dQ0x = 2 * tmp6 * ( tmp7 + Q1w * ry            + Q1y * rw + Q1z * rx) +tmp5*2*(ry*Q1x+tmp8+Q1z*rw*(-1)+rz*(-1)*Q1w)+tmp4*2*(Q1x*rx+Q1y*ry*(-1)+rz*(-1)*Q1z+tmp9)
-    dQ0y = 2 * tmp6 * (tmp10 - Q1w * rx - Q1x * rw + Q1y * rz           ) +tmp5*2*(rx*(-1)*Q1x+Q1y*ry+Q1z*rz*(-1)+tmp9)+tmp4*2*(Q1x*ry+tmp8+rw*Q1z+rz*Q1w)
-    dQ0z = 2 * tmp6 * ( tmp9            - Q1x * rx - Q1y * ry + Q1z * rz) +tmp5*2*(rw*Q1x+Q1y*rz+tmp10+rx*Q1w)+tmp4*2*(tmp7+Q1y*rw*(-1)+rx*Q1z+ry*(-1)*Q1w)
-    dQ0w = 2 * tmp6 * ( tmp8 + Q1w * rz - Q1x * ry            - Q1z * rw) +tmp5*2*((-1)*rx*Q1z+(-1)*rw*Q1y+tmp7+Q1w*ry)+tmp4*2*((-1)*rz*Q1y+tmp10+(-1)*rw*Q1x+Q1w*rx)
+    dQ0x = 2 * tmp6 * (tmp7  + Q1w * ry            + Q1y * rw + Q1z * rx)
+    dQ0y = 2 * tmp6 * (tmp10 - Q1w * rx - Q1x * rw + Q1y * rz           )
+    dQ0z = 2 * tmp6 * (tmp9             - Q1x * rx - Q1y * ry + Q1z * rz)
+    dQ0w = 2 * tmp6 * (tmp8  + Q1w * rz - Q1x * ry            - Q1z * rw)
+
+    dQ0x += 2 * tmp5 * (tmp8  - Q1w * rz + Q1x * ry            - Q1z * rw)
+    dQ0y += 2 * tmp5 * (tmp9             - Q1x * rx + Q1y * ry - Q1z * rz)
+    dQ0z += 2 * tmp5 * (tmp10 + Q1w * rx + Q1x * rw + Q1y * rz           )
+    dQ0w += 2 * tmp5 * (tmp7  + Q1w * ry            - Q1y * rw - Q1z * rx)
+
+    dQ0x += 2 * tmp4 * (tmp9             + Q1x * rx - Q1y * ry - Q1z * rz)
+    dQ0y += 2 * tmp4 * (tmp8  + Q1w * rz + Q1x * ry            + Q1z * rw)
+    dQ0z += 2 * tmp4 * (tmp7  - Q1w * ry            - Q1y * rw + Q1z * rx)
+    dQ0w += 2 * tmp4 * (tmp10 + Q1w * rx - Q1x * rw - Q1y * rz)
+
 
     dQ1x = -2 * tmp6 * tmp3 + 2 * tmp5 * tmp2 - 2 * tmp4 * tmp1
     dQ1y =  2 * tmp6 * tmp0 - 2 * tmp5 * tmp1 - 2 * tmp4 * tmp2
