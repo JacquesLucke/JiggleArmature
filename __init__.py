@@ -261,26 +261,32 @@ def quatSpring(Jb,r=None,k=None):
     rz  =  r.z
     rw  =  r.w
 
-    tmp0=Q0w*rx+Q0x*rw+Q0y*rz+Q0z*ry*(-1)
-    tmp1=Q0w*rw+Q0x*rx*(-1)+Q0y*ry*(-1)+Q0z*rz*(-1)
-    tmp2=Q0w*rz+Q0x*ry+Q0y*rx*(-1)+Q0z*rw
-    tmp3=Q0w*ry+Q0x*rz*(-1)+Q0y*rw+Q0z*rx
-    tmp4=Q1w*tmp0+Q1x*(-1)*tmp1+Q1y*(-1)*tmp2+tmp3*Q1z
-    tmp5=Q1w*tmp3+tmp2*Q1x+Q1y*(-1)*tmp1+Q1z*(-1)*tmp0
-    tmp6=Q1w*tmp2+Q1x*(-1)*tmp3+tmp0*Q1y+Q1z*(-1)*tmp1
-    tmp7=Q1x*rz
-    tmp8=Q1y*rx
-    tmp9=rw*Q1w
-    tmp10=Q1z*ry
-    c = pow(tmp4,2)+pow(tmp5,2)+pow(tmp6,2)
-    dQ0x = tmp6*2*(tmp7+rw*Q1y+Q1z*rx+ry*Q1w)+tmp5*2*(ry*Q1x+tmp8+Q1z*rw*(-1)+rz*(-1)*Q1w)+tmp4*2*(Q1x*rx+Q1y*ry*(-1)+rz*(-1)*Q1z+tmp9)
-    dQ0y = tmp6*2*(Q1x*rw*(-1)+rz*Q1y+tmp10+rx*(-1)*Q1w)+tmp5*2*(rx*(-1)*Q1x+Q1y*ry+Q1z*rz*(-1)+tmp9)+tmp4*2*(Q1x*ry+tmp8+rw*Q1z+rz*Q1w)
-    dQ0z = tmp6*2*(Q1x*rx*(-1)+ry*(-1)*Q1y+Q1z*rz+tmp9)+tmp5*2*(rw*Q1x+Q1y*rz+tmp10+rx*Q1w)+tmp4*2*(tmp7+Q1y*rw*(-1)+rx*Q1z+ry*(-1)*Q1w)
-    dQ0w = tmp6*2*(tmp8+(-1)*rw*Q1z+(-1)*ry*Q1x+Q1w*rz)+tmp5*2*((-1)*rx*Q1z+(-1)*rw*Q1y+tmp7+Q1w*ry)+tmp4*2*((-1)*rz*Q1y+tmp10+(-1)*rw*Q1x+Q1w*rx)
-    dQ1x = tmp6*(-2)*tmp3+2*tmp5*tmp2+tmp4*(-2)*tmp1
-    dQ1y = 2*tmp6*tmp0+tmp5*(-2)*tmp1+tmp4*(-2)*tmp2
-    dQ1z = tmp6*(-2)*tmp1+tmp5*(-2)*tmp0+2*tmp4*tmp3
-    dQ1w = 2*tmp5*tmp3+2*tmp6*tmp2+2*tmp4*tmp0
+    tmp0 = Q0w * rx + Q0x * rw + Q0y * rz - Q0z * ry
+    tmp1 = Q0w * rw - Q0x * rx - Q0y * ry - Q0z * rz
+    tmp2 = Q0w * rz + Q0x * ry - Q0y * rx + Q0z * rw
+    tmp3 = Q0w * ry - Q0x * rz + Q0y * rw + Q0z * rx
+
+
+    tmp4 = Q1w * tmp0 - Q1x * tmp1 - Q1y * tmp2 + Q1z * tmp3
+    tmp5 = Q1w * tmp3 + Q1x * tmp2 - Q1y * tmp1 - Q1z * tmp0
+    tmp6 = Q1w * tmp2 - Q1x * tmp3 + Q1y * tmp0 - Q1z * tmp1
+
+    tmp7 = Q1x * rz
+    tmp8 = Q1y * rx
+    tmp9 = Q1w * rw
+    tmp10 = Q1z * ry
+
+    c = pow(tmp4, 2) + pow(tmp5, 2) + pow(tmp6, 2)
+
+    dQ0x = 2 * tmp6 * ( tmp7 + Q1w * ry            + Q1y * rw + Q1z * rx) +tmp5*2*(ry*Q1x+tmp8+Q1z*rw*(-1)+rz*(-1)*Q1w)+tmp4*2*(Q1x*rx+Q1y*ry*(-1)+rz*(-1)*Q1z+tmp9)
+    dQ0y = 2 * tmp6 * (tmp10 - Q1w * rx - Q1x * rw + Q1y * rz           ) +tmp5*2*(rx*(-1)*Q1x+Q1y*ry+Q1z*rz*(-1)+tmp9)+tmp4*2*(Q1x*ry+tmp8+rw*Q1z+rz*Q1w)
+    dQ0z = 2 * tmp6 * ( tmp9            - Q1x * rx - Q1y * ry + Q1z * rz) +tmp5*2*(rw*Q1x+Q1y*rz+tmp10+rx*Q1w)+tmp4*2*(tmp7+Q1y*rw*(-1)+rx*Q1z+ry*(-1)*Q1w)
+    dQ0w = 2 * tmp6 * ( tmp8 + Q1w * rz - Q1x * ry            - Q1z * rw) +tmp5*2*((-1)*rx*Q1z+(-1)*rw*Q1y+tmp7+Q1w*ry)+tmp4*2*((-1)*rz*Q1y+tmp10+(-1)*rw*Q1x+Q1w*rx)
+
+    dQ1x = -2 * tmp6 * tmp3 + 2 * tmp5 * tmp2 - 2 * tmp4 * tmp1
+    dQ1y =  2 * tmp6 * tmp0 - 2 * tmp5 * tmp1 - 2 * tmp4 * tmp2
+    dQ1z = -2 * tmp6 * tmp1 - 2 * tmp5 * tmp0 + 2 * tmp4 * tmp3
+    dQ1w =  2 * tmp6 * tmp2 + 2 * tmp5 * tmp3 + 2 * tmp4 * tmp0
 
 
     div = dQ0x*dQ0x*w0 + \
