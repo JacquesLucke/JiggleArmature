@@ -75,29 +75,6 @@ class JiggleScenePanel(bpy.types.Panel):
         #col.prop(context.scene.jiggle,"length_fix_iters")
         #col.operator("jiggle.bake")
 
-
-
-def funKd(self,context):
-    b = context.bone
-    o = context.object
-    arm = o.data
-    for b2 in arm.bones:
-        b2.jiggle.Kd = b.jiggle.Kd
-
-def funKs(self,context):
-    b = context.bone
-    o = context.object
-    arm = o.data
-    for b2 in arm.bones:
-        b2.jiggle.Ks = b.jiggle.Ks
-
-def funmass(self,context):
-    b = context.bone
-    o = context.object
-    arm = o.data
-    for b2 in arm.bones:
-        b2.jiggle.mass = b.jiggle.mass
-
 inop = False
 def funp(prop):
     def f(self,context):
@@ -128,22 +105,9 @@ class JiggleBone(bpy.types.PropertyGroup):
     control_bone: bpy.props.StringProperty(name = "control bone")
     debug: bpy.props.StringProperty()
 
-def skew(v):
-    m = Matrix.Identity(3)
-    m[0][0], m[1][0], m[2][0] =     0, -v[2],  v[1]
-    m[0][1], m[1][1], m[2][1] =  v[2],     0, -v[0]
-    m[0][2], m[1][2], m[2][2] = -v[1], v[0],     0
-    return m #m.transposed()
-def iskew(m):
-    v = Vector((m[1][2] - m[2][1], m[2][0]- m[0][2], m[0][1]-m[1][0]))*0.5
-    return v #m.transposed()
 def setq(om, m):
     for i in range(4):
         om[i]= m[i]
-def getm(m, om):
-    for i in range(3):
-        for j in range(3):
-            m[i][j]=om[i][j]
 
 class ResetJigglePropsOperator(bpy.types.Operator):
     bl_idname = "jiggle.reset"
@@ -204,12 +168,6 @@ class JiggleBonePanel(bpy.types.Panel):
             col.operator("jiggle.reset")
             if(bon.parent==None):
                 col.label(text= "warning: jibblebones without parent will fall",icon='COLOR_RED')
-
-def centerM(wb,l):
-    ax = maxis(wb,1).normalized()
-    wb[0][3] += ax[0]*l*0.5
-    wb[1][3] += ax[1]*l*0.5
-    wb[2][3] += ax[2]*l*0.5
 
 class JB:
     def __init__(self, b,M,p):
@@ -291,18 +249,6 @@ def saxis(M,i,v):
     M[2][i] = v[2]
 def mpos(M):
     return Vector((M[0][3],M[1][3],M[2][3]))
-def ort(M):
-    a = M[0]
-    b = M[1]
-    c = M[2]
-    a = a.normalized()
-    b = (b- a*a.dot(b)).normalized()
-    c = (c - a*a.dot(c) - b*b.dot(c)).normalized()
-    M = Matrix.Identity(3)
-    M[0] = a
-    M[1] = b
-    M[2] = c
-    return M
 def qadd(a,b):
     return Quaternion((a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]))
 def qadd2(a,b):
@@ -518,9 +464,7 @@ def step(scene):
     scene.jiggle.last_frame+= 1
     # print("updated")
 
-@persistent
-def update_post(scene, tm = False):
-    global dt
+
 
 @persistent
 def update(scene, tm = False):
