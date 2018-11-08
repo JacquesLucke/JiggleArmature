@@ -209,31 +209,26 @@ class JB:
 
     @property
     def P(self):
-        return Vector((self.M[0][3],self.M[1][3],self.M[2][3]))
+        return self.M.translation
     @P.setter
     def P(self, x):
-        self.M[0][3]= x[0]
-        self.M[1][3]= x[1]
-        self.M[2][3]= x[2]
+        self.M.translation = x
 
     @property
     def Q(self):
         return self.M.to_quaternion()
     @Q.setter
     def Q(self, x):
-        m = x.to_matrix()
-        for i in range(3):
-            for j in range(3):
-                self.M[i][j] = m[i][j]
+        self.R = x.to_matrix()
 
     @property
     def R(self):
         return self.M.to_3x3()
     @R.setter
     def R(self, x):
-        for i in range(3):
-            for j in range(3):
-                self.M[i][j] = x[i][j]
+        translation = self.M.translation
+        self.M = x.to_4x4()
+        self.M.translation = translation
 
 def propB(ow,b, l, p, children_of_bone):
     j = JB(b, ow @ b.matrix, p)
