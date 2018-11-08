@@ -179,30 +179,25 @@ class JB:
         self.w = 0
         self.Cx = None
 
-    def applyImpulse(self, p, I,t=0.5):
-        if(self.w>0.0):
+    def applyImpulse(self, p, I, t=0.5):
+        if self.w <= 0:
+            return
+
             I = I * self.w
             C = self.sample(t)
             r = p - C
             tg = p + I
             r2 = tg - C
             ax = r.cross(r2)
-            if(ax.length_squared > 0.000001):
-                r.normalize()
-                r2.normalize()
-                cos = r.dot(r2)
-                ax.normalize()
 
-                if(cos < -0.9999999):
-                    cos = -0.9999999
-                if(cos >  0.9999999):
-                    cos =  0.9999999
-                ag = math.acos(cos)
-                mr = Matrix.Rotation(ag, 3, ax)
-                self.R = (mr@self.R).normalized()
-                self.P+= C- self.sample(t)
-                p = mr@(p-C) + C
-            self.P+= tg-p
+            if(ax.length_squared > 0.000001):
+            angle = r.angle(r2)
+            mr = Matrix.Rotation(angle, 3, ax)
+            self.R = (mr @ self.R).normalized()
+            self.M.translation += C - self.sample(t)
+            p = mr @ (p - C) + C
+
+        self.M.translation += tg - p
 
     def sample(self, t):
         return self.M.translation + t * self.M.col[1].to_3d() * self.length
