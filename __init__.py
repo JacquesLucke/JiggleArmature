@@ -125,7 +125,7 @@ class ResetJigglePropsOperator(bpy.types.Operator):
                         Jb = b.bone.jiggle
                         setq(Jb.R, M.to_quaternion().normalized())
                         Jb.V = Vector((0,0,0))
-                        Jb.P = mpos(M)
+                        Jb.P = M.translation.copy()
                         Jb.W = Vector((0,0,0))
                         #Jb.M = Matrix(M)
         return {'FINISHED'}
@@ -172,27 +172,22 @@ class JiggleBonePanel(bpy.types.Panel):
 class JB:
     def __init__(self, b,M,p):
         self.M  = M.copy()
-        self.length = b.bone.length*maxis(M,0).length
-       # self.P += maxis(M,1)*0.5*b.bone.length
+        self.length = b.bone.length*M.col[0].length
         self.b = b
         self.parent = p
         self.rest = None
         self.w = 0
         self.Cx = None
-    def sample(self, t):
-        return self.P + maxis(self.R,1)*(t*self.length)
+
     def applyImpulse(self, p, I,t=0.5):
         if(self.w>0.0):
-            I = I*self.w
-            #ip = self.M.inverted()*p
-            #p = self.sample(t)
+            I = I * self.w
             C = self.sample(t)
-            r = p-C
-            tg = p+I
-            r2 = tg-C
+            r = p - C
+            tg = p + I
+            r2 = tg - C
             ax = r.cross(r2)
-            lax = ax.length
-            if(lax > 0.000001):
+            if(ax.length_squared > 0.000001):
                 r.normalize()
                 r2.normalize()
                 cos = r.dot(r2)
@@ -203,14 +198,15 @@ class JB:
                 if(cos >  0.9999999):
                     cos =  0.9999999
                 ag = math.acos(cos)
-                mr = Matrix.Rotation(ag , 3, ax)#.to_quaternion()
+                mr = Matrix.Rotation(ag, 3, ax)
                 self.R = (mr@self.R).normalized()
-                #self.Q = (mr@self.Q).normalized()
                 self.P+= C- self.sample(t)
-                p = mr@(p-C) + C#self.sample(t)
-                 #p = self.M*ip
-            #print((tg-p).length)
+                p = mr@(p-C) + C
             self.P+= tg-p
+
+    def sample(self, t):
+        return self.P + self.R.col[1].to_3d() * (t * self.length)
+
     @property
     def P(self):
         return Vector((self.M[0][3],self.M[1][3],self.M[2][3]))
@@ -219,6 +215,7 @@ class JB:
         self.M[0][3]= x[0]
         self.M[1][3]= x[1]
         self.M[2][3]= x[2]
+
     @property
     def Q(self):
         return self.M.to_quaternion()
@@ -228,6 +225,7 @@ class JB:
         for i in range(3):
             for j in range(3):
                 self.M[i][j] = m[i][j]
+
     @property
     def R(self):
         return self.M.to_3x3()
@@ -236,30 +234,21 @@ class JB:
         for i in range(3):
             for j in range(3):
                 self.M[i][j] = x[i][j]
+
 def propB(ow,b, l, p, children_of_bone):
     j = JB(b, ow @ b.matrix, p)
     l.append(j)
     for c in children_of_bone[b]:
         propB(ow,c,l,j,children_of_bone)
-def maxis(M,i):
-    return Vector((M[0][i],M[1][i],M[2][i]))
-def saxis(M,i,v):
-    M[0][i] = v[0]
-    M[1][i] = v[1]
-    M[2][i] = v[2]
-def mpos(M):
-    return Vector((M[0][3],M[1][3],M[2][3]))
+
 def qadd(a,b):
     return Quaternion((a[0]+b[0],a[1]+b[1],a[2]+b[2],a[3]+b[3]))
+
 def qadd2(a,b):
     a.x+=b.x
     a.y+=b.y
     a.z+=b.z
     a.w+=b.w
-
-def normR(m):
-    for i in range(3):
-        saxis(m,i, maxis(m,i).normalized())
 
 def quatSpring(Jb,r=None,k=None):
     Q0 = Jb.parent.Q
@@ -339,7 +328,7 @@ def step(scene):
         if(o.type == 'ARMATURE'):
 
             ow = o.matrix_world.copy()
-            scale = maxis(ow,0).length
+            scale = ow.col[0].length
 
             children_of_bone = defaultdict(list)
             for bone in o.pose.bones:
@@ -378,7 +367,7 @@ def step(scene):
 
 
                         wb.rest_base = wb.rest.copy()
-                        saxis(wb.rest,3, mpos(wb.rest)*scale)
+                        wb.rest.translation = wb.rest.translation * scale
                         wb.length = b.bone.length*scale
                         wb.irest = wb.rest.inverted()
                         wb.w = 1.0/Jb.mass
@@ -410,7 +399,7 @@ def step(scene):
                         Jb = b.bone.jiggle
                         Pc =  wb.P
                         target_m = wb.parent.M@wb.rest
-                        Pt = mpos(target_m)
+                        Pt = target_m.translation.copy()
                         if(Jb.debug in scene.objects):
                             scene.objects[Jb.debug].location = Pc
                         W = wb.w + wb.parent.w
@@ -433,7 +422,7 @@ def step(scene):
                     if(b.parent==None):
                         continue
                     Jb = b.bone.jiggle
-                    wb.P = wb.parent.M@mpos(wb.rest)
+                    wb.P = wb.parent.M@wb.rest.translation
                     wb.R = wb.Q.normalized().to_matrix()
 
 
@@ -458,7 +447,6 @@ def step(scene):
                     b.matrix_basis = (pM@wb.rest_base).inverted()@wb.M
 
     scene.jiggle.last_frame+= 1
-    # print("updated")
 
 
 
@@ -484,7 +472,7 @@ def update(scene, tm = False):
                         Jb = b.bone.jiggle
                         setq(Jb.R, M.to_quaternion())
                         Jb.V = Vector((0,0,0))
-                        Jb.P = mpos(M)
+                        Jb.P = M.translation.copy()
                         Jb.W = Vector((0,0,0))
 
         if(scene.frame_current <= bpy.context.scene.frame_start):
