@@ -205,7 +205,7 @@ class JB:
             self.P+= tg-p
 
     def sample(self, t):
-        return self.P + self.R.col[1].to_3d() * (t * self.length)
+        return self.M.translation + t * self.M.col[1].to_3d() * self.length
 
     @property
     def P(self):
