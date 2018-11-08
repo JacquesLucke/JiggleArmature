@@ -236,11 +236,11 @@ class JB:
         for i in range(3):
             for j in range(3):
                 self.M[i][j] = x[i][j]
-def propB(ow,b, l, p):
+def propB(ow,b, l, p, children_of_bone):
     j = JB(b, ow @ b.matrix, p)
     l.append(j)
-    for c in b.children:
-        propB(ow,c,l,j)
+    for c in children_of_bone[b]:
+        propB(ow,c,l,j,children_of_bone)
 def maxis(M,i):
     return Vector((M[0][i],M[1][i],M[2][i]))
 def saxis(M,i,v):
@@ -341,12 +341,17 @@ def step(scene):
             ow = o.matrix_world.copy()
             scale = maxis(ow,0).length
 
+            children_of_bone = defaultdict(list)
+            for bone in o.pose.bones:
+                if bone.parent is not None:
+                    children_of_bone[bone.parent].append(bone)
+
             for _ in range( sub_steps):
                 bl = []
 
                 for b in o.pose.bones:
                     if(b.parent==None):
-                        propB(ow,b,bl,None)
+                        propB(ow,b,bl,None,children_of_bone)
 
                 bl2 = []
                 for wb in bl:
